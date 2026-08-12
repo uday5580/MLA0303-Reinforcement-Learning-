@@ -1,0 +1,33 @@
+#7
+import random
+
+# Rewards for four actions
+rewards = [5, 10, 2, 8]
+
+epsilon = 0.3      # 30% Exploration
+episodes = 10
+
+print("Episode\tStrategy\tAction\tReward")
+
+explore = 0
+exploit = 0
+
+for episode in range(1, episodes + 1):
+
+    if random.random() < epsilon:
+        # Exploration
+        action = random.randint(0, 3)
+        strategy = "Explore"
+        explore += 1
+    else:
+        # Exploitation
+        action = rewards.index(max(rewards))
+        strategy = "Exploit"
+        exploit += 1
+
+    reward = rewards[action]
+
+    print(f"{episode}\t{strategy}\t\tA{action+1}\t{reward}")
+
+print("\nExploration Count :", explore)
+print("Exploitation Count:", exploit)
