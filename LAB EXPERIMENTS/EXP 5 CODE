@@ -1,0 +1,82 @@
+#5
+import numpy as np
+
+# 3 x 4 Grid
+rows, cols = 3, 4
+
+# Rewards
+rewards = np.array([
+    [0,  0,   0, 10],   # Cheese (+10)
+    [0, -5,   0, -10],  # Trap (-10), Obstacle (-5)
+    [0,  0,   0,  0]
+], dtype=float)
+
+# Discount Factor
+gamma = 0.9
+
+# Initialize Value Function
+V = np.zeros((rows, cols))
+
+# Goal (Cheese)
+V[0][3] = 10
+
+# Bellman Updates
+for iteration in range(10):
+    new_V = V.copy()
+
+    for i in range(rows):
+        for j in range(cols):
+
+            # Skip Cheese state
+            if (i, j) == (0, 3):
+                continue
+
+            neighbors = []
+
+            # Up
+            if i > 0:
+                neighbors.append(V[i-1][j])
+
+            # Down
+            if i < rows-1:
+                neighbors.append(V[i+1][j])
+
+            # Left
+            if j > 0:
+                neighbors.append(V[i][j-1])
+
+            # Right
+            if j < cols-1:
+                neighbors.append(V[i][j+1])
+
+            new_V[i][j] = rewards[i][j] + gamma * max(neighbors)
+
+    V = new_V
+
+print("Final Value Function:\n")
+print(np.round(V, 2))
+
+# Mouse Path
+print("\nMouse Path:")
+
+state = (2, 0)
+
+while state != (0, 3):
+
+    print(state, end=" -> ")
+
+    i, j = state
+    moves = []
+
+    if i > 0:
+        moves.append(((i-1, j), V[i-1][j]))
+    if i < rows-1:
+        moves.append(((i+1, j), V[i+1][j]))
+    if j > 0:
+        moves.append(((i, j-1), V[i][j-1]))
+    if j < cols-1:
+        moves.append(((i, j+1), V[i][j+1]))
+
+    state = max(moves, key=lambda x: x[1])[0]
+
+print("Cheese ")
