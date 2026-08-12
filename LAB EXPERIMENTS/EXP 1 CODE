@@ -1,0 +1,39 @@
+#1
+import gymnasium as gym
+import torch
+import torch.nn as nn
+env = gym.make("CartPole-v1")
+model = nn.Sequential(
+    nn.Linear(4, 16),
+    nn.ReLU(),
+    nn.Linear(16, 2),
+    nn.Softmax(dim=-1)
+)
+
+# Reset environment
+state, info = env.reset()
+
+total_reward = 0
+step = 1
+done = False
+
+while not done:
+    state_tensor = torch.FloatTensor(state)
+    action = torch.argmax(model(state_tensor)).item()
+
+    next_state, reward, terminated, truncated, info = env.step(action)
+
+    total_reward += reward
+    print(f"Step {step}")
+    print("State :", state)
+    print("Action:", action)
+    print("Reward:", reward)
+    print("------------------------")
+
+    state = next_state
+    step += 1
+    done = terminated or truncated
+
+print("Total Reward:", total_reward)
+
+env.close()
