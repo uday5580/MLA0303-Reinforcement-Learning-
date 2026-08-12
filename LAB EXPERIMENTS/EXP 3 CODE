@@ -1,0 +1,37 @@
+#3
+#  2 x 2 Grid World
+
+grid = [
+    ["S", " "],
+    [" ", "G"]
+]
+
+# Policy (Action for each state)
+policy = {
+    (0, 0): "Right",
+    (0, 1): "Down",
+    (1, 0): "Right",
+    (1, 1): "Goal"
+}
+
+# Starting State
+state = (0, 0)
+
+print("2 x 2 Grid World")
+print("----------------")
+
+while state != (1, 1):
+    print("Current State:", state)
+    action = policy[state]
+    print("Policy Action:", action)
+
+    # Move according to policy
+    if action == "Right":
+        state = (state[0], state[1] + 1)
+    elif action == "Down":
+        state = (state[0] + 1, state[1])
+
+    print("Next State:", state)
+    print("----------------")
+
+print("Goal Reached!")
