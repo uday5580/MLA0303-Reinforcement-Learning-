@@ -1,0 +1,48 @@
+#2
+import random
+
+# States
+states = ["A", "B", "Goal"]
+
+# Rewards
+rewards = {
+    "A": 0,
+    "B": 1,
+    "Goal": 10
+}
+
+# Transition Function (MDP)
+transitions = {
+    "A": "B",
+    "B": "Goal",
+    "Goal": "Goal"
+}
+
+# Initial State
+state = "A"
+total_reward = 0
+
+print("Markov Decision Process Demonstration\n")
+
+while state != "Goal":
+    print("Current State:", state)
+
+    # Action
+    action = "Move"
+    print("Action:", action)
+
+    # Next State
+    next_state = transitions[state]
+
+    # Reward
+    reward = rewards[next_state]
+    total_reward += reward
+
+    print("Next State:", next_state)
+    print("Reward:", reward)
+    print("----------------------")
+
+    state = next_state
+
+print("Final State:", state)
+print("Total Reward:", total_reward)
