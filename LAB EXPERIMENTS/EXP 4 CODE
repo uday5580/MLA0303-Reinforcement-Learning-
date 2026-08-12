@@ -1,0 +1,52 @@
+#4
+# # Bellman Equation Demonstration using 3x3 Grid
+
+import numpy as np
+
+# Rewards in the grid
+grid = np.array([
+    [0, 0, 0],
+    [0, -1, 0],
+    [0, 0, 10]
+])
+
+gamma = 0.9      # Discount factor
+
+# Initialize value function
+V = np.zeros((3,3))
+
+# Goal state value
+V[2][2] = 10
+
+print("Initial Value Function")
+print(V)
+
+# Bellman Update
+for i in range(3):
+    for j in range(3):
+
+        if (i, j) == (2, 2):
+            continue
+
+        next_values = []
+
+        # Up
+        if i > 0:
+            next_values.append(V[i-1][j])
+
+        # Down
+        if i < 2:
+            next_values.append(V[i+1][j])
+
+        # Left
+        if j > 0:
+            next_values.append(V[i][j-1])
+
+        # Right
+        if j < 2:
+            next_values.append(V[i][j+1])
+
+        V[i][j] = grid[i][j] + gamma * max(next_values)
+
+print("\nUpdated Value Function")
+print(V)
