@@ -1,0 +1,131 @@
+import numpy as np
+
+class ChessEnvironment:
+
+    def __init__(self):
+
+        self.board = np.zeros((8, 8))
+
+        # White pieces
+        self.board[0] = [
+            4, 2, 3, 5, 6, 3, 2, 4
+        ]
+
+        self.board[1] = [1] * 8
+
+        # Black pieces
+        self.board[6] = [-1] * 8
+
+        self.board[7] = [
+            -4, -2, -3, -5,
+            -6, -3, -2, -4
+        ]
+
+    def get_state(self):
+        return self.board.flatten()
+
+    def get_reward(self):
+
+        # Simplified reward
+        return np.sum(self.board)
+
+
+class SimpleDQN:
+
+    def __init__(self):
+
+        self.input_size = 64
+        self.hidden_size = 32
+        self.output_size = 4
+
+        self.W1 = np.random.randn(
+            self.input_size,
+            self.hidden_size
+        ) * 0.01
+
+        self.W2 = np.random.randn(
+            self.hidden_size,
+            self.output_size
+        ) * 0.01
+
+        self.learning_rate = 0.001
+
+    def relu(self, x):
+        return np.maximum(0, x)
+
+    def predict(self, state):
+
+        hidden = self.relu(
+            np.dot(state, self.W1)
+        )
+
+        output = np.dot(
+            hidden,
+            self.W2
+        )
+
+        return output
+
+    def train(self, state, target):
+
+        hidden = self.relu(
+            np.dot(state, self.W1)
+        )
+
+        prediction = np.dot(
+            hidden,
+            self.W2
+        )
+
+        error = target - prediction
+
+        self.W2 += (
+            self.learning_rate
+            * np.outer(hidden, error)
+        )
+
+
+env = ChessEnvironment()
+
+agent = SimpleDQN()
+
+gamma = 0.9
+
+episodes = 100
+
+for episode in range(episodes):
+
+    state = env.get_state()
+
+    q_values = agent.predict(state)
+
+    action = np.argmax(q_values)
+
+    reward = env.get_reward()
+
+    target = q_values.copy()
+
+    target[action] = (
+        reward
+        + gamma * np.max(q_values)
+    )
+
+    agent.train(
+        state,
+        target
+    )
+
+
+print("Deep Q-Learning training completed.")
+
+state = env.get_state()
+
+q_values = agent.predict(state)
+
+print("Q-values:")
+print(q_values)
+
+print(
+    "Best action selected:",
+    np.argmax(q_values)
+)
