@@ -1,0 +1,138 @@
+import numpy as np
+
+class MarioEnvironment:
+
+    def __init__(self):
+
+        self.rows = 5
+        self.cols = 5
+
+        self.start = (0, 0)
+        self.goal = (4, 4)
+
+        self.obstacles = {
+            (1, 1),
+            (2, 2),
+            (3, 3)
+        }
+
+        self.actions = [
+            "UP",
+            "DOWN",
+            "LEFT",
+            "RIGHT"
+        ]
+
+        self.Q = np.zeros(
+            (self.rows, self.cols, 4)
+        )
+
+        self.alpha = 0.1
+        self.gamma = 0.9
+        self.epsilon = 0.1
+
+    def reset(self):
+        self.position = self.start
+        return self.position
+
+    def move(self, action):
+
+        r, c = self.position
+
+        if action == "UP":
+            new_position = (r - 1, c)
+
+        elif action == "DOWN":
+            new_position = (r + 1, c)
+
+        elif action == "LEFT":
+            new_position = (r, c - 1)
+
+        else:
+            new_position = (r, c + 1)
+
+        if not (
+            0 <= new_position[0] < self.rows
+            and
+            0 <= new_position[1] < self.cols
+        ):
+            new_position = self.position
+
+        self.position = new_position
+
+        if self.position == self.goal:
+            reward = 10
+            done = True
+
+        elif self.position in self.obstacles:
+            reward = -5
+            done = False
+
+        else:
+            reward = -1
+            done = False
+
+        return self.position, reward, done
+
+
+    def train(self, episodes=1000):
+
+        for episode in range(episodes):
+
+            state = self.reset()
+            total_reward = 0
+
+            for step in range(100):
+
+                if np.random.rand() < self.epsilon:
+                    action = np.random.randint(4)
+                else:
+                    action = np.argmax(
+                        self.Q[state[0], state[1]]
+                    )
+
+                next_state, reward, done = self.move(
+                    self.actions[action]
+                )
+
+                old_value = self.Q[
+                    state[0], state[1], action
+                ]
+
+                next_value = np.max(
+                    self.Q[
+                        next_state[0],
+                        next_state[1]
+                    ]
+                )
+
+                self.Q[
+                    state[0],
+                    state[1],
+                    action
+                ] = old_value + self.alpha * (
+                    reward
+                    + self.gamma * next_value
+                    - old_value
+                )
+
+                total_reward += reward
+                state = next_state
+
+                if done:
+                    break
+
+            if (episode + 1) % 100 == 0:
+                print(
+                    "Episode:",
+                    episode + 1,
+                    "Reward:",
+                    total_reward
+                )
+
+
+env = MarioEnvironment()
+
+env.train(1000)
+
+print("\nQ-Learning training completed.")
