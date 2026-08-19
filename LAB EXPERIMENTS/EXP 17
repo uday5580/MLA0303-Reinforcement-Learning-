@@ -1,0 +1,187 @@
+import random
+
+episodes = 1000
+
+alpha = 0.1
+gamma = 0.9
+epsilon = 0.1
+
+
+# Simple environment
+def step(state, action):
+
+    if action == 0:
+        next_state = max(0, state - 1)
+    else:
+        next_state = min(4, state + 1)
+
+    if next_state == 4:
+        reward = 10
+    else:
+        reward = -1
+
+    return next_state, reward
+
+
+# TD(0)
+def td_zero():
+
+    V = [0.0] * 5
+    steps = 0
+
+    for episode in range(episodes):
+
+        state = 0
+
+        for _ in range(100):
+
+            action = random.randint(0, 1)
+
+            next_state, reward = step(
+                state, action
+            )
+
+            V[state] += alpha * (
+                reward
+                + gamma * V[next_state]
+                - V[state]
+            )
+
+            steps += 1
+            state = next_state
+
+            if state == 4:
+                break
+
+    return sum(V), steps
+
+
+# SARSA
+def sarsa():
+
+    Q = [[0.0, 0.0] for _ in range(5)]
+
+    steps = 0
+
+    for episode in range(episodes):
+
+        state = 0
+
+        if random.random() < epsilon:
+            action = random.randint(0, 1)
+        else:
+            action = max(
+                range(2),
+                key=lambda a: Q[state][a]
+            )
+
+        for _ in range(100):
+
+            next_state, reward = step(
+                state, action
+            )
+
+            if random.random() < epsilon:
+                next_action = random.randint(0, 1)
+            else:
+                next_action = max(
+                    range(2),
+                    key=lambda a: Q[next_state][a]
+                )
+
+            Q[state][action] += alpha * (
+                reward
+                + gamma * Q[next_state][next_action]
+                - Q[state][action]
+            )
+
+            steps += 1
+
+            state = next_state
+            action = next_action
+
+            if state == 4:
+                break
+
+    return max(max(row) for row in Q), steps
+
+
+# Q-Learning
+def q_learning():
+
+    Q = [[0.0, 0.0] for _ in range(5)]
+
+    steps = 0
+
+    for episode in range(episodes):
+
+        state = 0
+
+        for _ in range(100):
+
+            if random.random() < epsilon:
+                action = random.randint(0, 1)
+            else:
+                action = max(
+                    range(2),
+                    key=lambda a: Q[state][a]
+                )
+
+            next_state, reward = step(
+                state, action
+            )
+
+            Q[state][action] += alpha * (
+                reward
+                + gamma * max(Q[next_state])
+                - Q[state][action]
+            )
+
+            steps += 1
+            state = next_state
+
+            if state == 4:
+                break
+
+    return max(max(row) for row in Q), steps
+
+
+td_reward, td_steps = td_zero()
+sarsa_reward, sarsa_steps = sarsa()
+q_reward, q_steps = q_learning()
+
+
+print("Algorithm Comparison")
+print("--------------------")
+
+print(
+    "TD(0)       : Reward =",
+    round(td_reward, 2),
+    "Steps =",
+    td_steps
+)
+
+print(
+    "SARSA       : Reward =",
+    round(sarsa_reward, 2),
+    "Steps =",
+    sarsa_steps
+)
+
+print(
+    "Q-Learning  : Reward =",
+    round(q_reward, 2),
+    "Steps =",
+    q_steps
+)
+
+best = max(
+    [
+        ("TD(0)", td_reward),
+        ("SARSA", sarsa_reward),
+        ("Q-Learning", q_reward)
+    ],
+    key=lambda x: x[1]
+)
+
+print("\nBest Algorithm:", best[0])
