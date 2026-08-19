@@ -1,0 +1,154 @@
+import random
+
+class TicTacToe:
+
+    def __init__(self):
+        self.winning_combinations = [
+            [0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8],
+            [0, 3, 6],
+            [1, 4, 7],
+            [2, 5, 8],
+            [0, 4, 8],
+            [2, 4, 6]
+        ]
+
+        self.reset()
+
+    def reset(self):
+        self.board = [" "] * 9
+        self.current_player = "X"
+
+    def available_moves(self):
+        return [
+            i for i in range(9)
+            if self.board[i] == " "
+        ]
+
+    def make_move(self, move):
+        self.board[move] = self.current_player
+        self.current_player = (
+            "O" if self.current_player == "X" else "X"
+        )
+
+    def winner(self):
+
+        for combo in self.winning_combinations:
+
+            a, b, c = combo
+
+            if (
+                self.board[a] != " "
+                and self.board[a] == self.board[b]
+                and self.board[b] == self.board[c]
+            ):
+                return self.board[a]
+
+        return None
+
+    def game_over(self):
+        return (
+            self.winner() is not None
+            or len(self.available_moves()) == 0
+        )
+
+
+alpha = 0.1
+gamma = 0.9
+epsilon = 0.1
+
+Q = {}
+
+
+def get_q(state, action):
+    return Q.get((state, action), 0.0)
+
+
+def choose_action(env, state):
+
+    moves = env.available_moves()
+
+    if not moves:
+        return None
+
+    if random.random() < epsilon:
+        return random.choice(moves)
+
+    return max(
+        moves,
+        key=lambda action: get_q(state, action)
+    )
+
+
+def sarsa_update(
+    state,
+    action,
+    reward,
+    next_state,
+    next_action
+):
+
+    current_q = get_q(state, action)
+
+    if next_action is None:
+        next_q = 0
+    else:
+        next_q = get_q(next_state, next_action)
+
+    Q[(state, action)] = current_q + alpha * (
+        reward + gamma * next_q - current_q
+    )
+
+
+env = TicTacToe()
+
+episodes = 10000
+
+for episode in range(episodes):
+
+    env.reset()
+
+    state = tuple(env.board)
+
+    action = choose_action(env, state)
+
+    while not env.game_over():
+
+        env.make_move(action)
+
+        next_state = tuple(env.board)
+
+        winner = env.winner()
+
+        if winner == "X":
+            reward = 1
+        elif winner == "O":
+            reward = -1
+        else:
+            reward = 0
+
+        next_action = choose_action(
+            env,
+            next_state
+        )
+
+        sarsa_update(
+            state,
+            action,
+            reward,
+            next_state,
+            next_action
+        )
+
+        state = next_state
+        action = next_action
+
+        if action is None:
+            break
+
+
+print("SARSA training completed.")
+
+print("Number of learned state-action pairs:",
+      len(Q))
