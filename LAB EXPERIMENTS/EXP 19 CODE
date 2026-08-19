@@ -1,0 +1,128 @@
+import numpy as np
+
+# Simplified autonomous vehicle environment
+
+class VehicleEnvironment:
+
+    def __init__(self):
+
+        self.states = [
+            "CLEAR",
+            "OBSTACLE",
+            "LEFT",
+            "RIGHT"
+        ]
+
+        self.actions = [
+            "FORWARD",
+            "LEFT",
+            "RIGHT",
+            "BRAKE"
+        ]
+
+    def get_reward(self, state, action):
+
+        if state == "CLEAR":
+
+            if action == "FORWARD":
+                return 10
+            else:
+                return 2
+
+        elif state == "OBSTACLE":
+
+            if action == "BRAKE":
+                return 10
+            else:
+                return -10
+
+        elif state == "LEFT":
+
+            if action == "LEFT":
+                return 8
+            else:
+                return -2
+
+        else:
+
+            if action == "RIGHT":
+                return 8
+            else:
+                return -2
+
+
+env = VehicleEnvironment()
+
+Q = np.zeros(
+    (
+        len(env.states),
+        len(env.actions)
+    )
+)
+
+alpha = 0.1
+gamma = 0.9
+epsilon = 0.1
+
+episodes = 1000
+
+for episode in range(episodes):
+
+    state_index = np.random.randint(
+        len(env.states)
+    )
+
+    state = env.states[state_index]
+
+    if np.random.rand() < epsilon:
+
+        action_index = np.random.randint(
+            len(env.actions)
+        )
+
+    else:
+
+        action_index = np.argmax(
+            Q[state_index]
+        )
+
+    action = env.actions[action_index]
+
+    reward = env.get_reward(
+        state,
+        action
+    )
+
+    next_state_index = np.random.randint(
+        len(env.states)
+    )
+
+    Q[state_index, action_index] += alpha * (
+        reward
+        + gamma * np.max(Q[next_state_index])
+        - Q[state_index, action_index]
+    )
+
+
+print("Learned Vehicle Policy")
+print("----------------------")
+
+for i, state in enumerate(env.states):
+
+    best_action = env.actions[
+        np.argmax(Q[i])
+    ]
+
+    print(
+        state,
+        "->",
+        best_action
+    )
+
+print("\nMaximum Q-values:")
+print(np.max(Q, axis=1))
+
+print(
+    "\nNote: For complex visual inputs such as camera images, "
+    "a Deep Q-Network can replace this table-based Q-learning."
+)
